@@ -8,7 +8,6 @@ TypeScript plugin for Obsidian — syncs a vault with a self-hosted [Devitri](..
 |------|-------------|
 | [`README.md`](README.md) | User-facing overview |
 | [`INSTALL.md`](INSTALL.md) | Build and install steps |
-| [`STABILITY.md`](STABILITY.md) | Sync safety and auth behaviour |
 
 ## Layout
 

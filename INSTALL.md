@@ -48,7 +48,6 @@ Then **Connect & Sync** or **Verify**, and optionally **Sync Now**.
 | File | Purpose |
 |------|---------|
 | [`README.md`](README.md) | Overview and quick reference |
-| [`STABILITY.md`](STABILITY.md) | Safety behaviour and troubleshooting |
 | [`PROJECT.md`](PROJECT.md) | Repo layout for contributors |
 
 ## Troubleshooting

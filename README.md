@@ -106,8 +106,6 @@ Embedded images and linked attachments sync like any other vault file. On the fi
 | Sync blocked        | **Confirm once** under Bulk delete, then **Sync Now**                                                                                                                              |
 | Session expired     | Generate a new access key in the dashboard **Connect** page and paste it in settings                                                                                               |
 
-More detail on sync safety and auth behaviour: [`STABILITY.md`](STABILITY.md).
-
 ## Related projects
 
 | Repository                                                                          | Role                                            |
