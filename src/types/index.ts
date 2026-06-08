@@ -32,7 +32,7 @@ export function normalizeSyncManifest(
 
 export interface SyncDecision {
   path: string;
-  action: 'upload' | 'download' | 'conflict' | 'skip' | 'delete';
+  action: 'upload' | 'download' | 'conflict' | 'skip' | 'delete' | 'delete_local';
   local?: FileState;
   base?: FileState;
   remote?: FileState;

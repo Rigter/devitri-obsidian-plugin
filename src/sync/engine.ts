@@ -13,6 +13,7 @@ import {
 } from '../types';
 import { computeHash, buildLocalManifest } from './manifest';
 import { threeWayMerge, createConflictCopy } from './conflicts';
+import { negotiateManifests } from './negotiate';
 
 function isTFile(file: unknown): file is TFile {
   return file instanceof TFile;
@@ -45,6 +46,10 @@ export class DevitriSyncEngine {
     } else {
       this.manifestB.files.push(entry);
     }
+  }
+
+  private removeFromBaseManifest(path: string): void {
+    this.manifestB.files = this.manifestB.files.filter((f) => f.path !== path);
   }
 
   public markDirty(file: string): void {
@@ -146,48 +151,7 @@ export class DevitriSyncEngine {
   }
 
   private negotiate(L: SyncManifest, R: SyncManifest): SyncDecision[] {
-    const decisions: SyncDecision[] = [];
-    const localManifest = normalizeSyncManifest(L, L.vault_id);
-    const remoteManifest = normalizeSyncManifest(R, L.vault_id);
-    const B = normalizeSyncManifest(this.manifestB, localManifest.vault_id);
-    const bMap = new Map(B.files.map((f) => [f.path, f]));
-    const rMap = new Map(remoteManifest.files.map((f) => [f.path, f]));
-
-    for (const local of localManifest.files) {
-      const base = bMap.get(local.path);
-      const remoteFile = rMap.get(local.path);
-      const HL = local.hash;
-      const HB = base?.hash ?? null;
-      const HR = remoteFile?.hash ?? null;
-
-      if (HB === null && HR === null) {
-        decisions.push({ path: local.path, action: 'upload', local });
-      } else if (HB !== null && HR !== null && HL === HB && HR === HB) {
-        decisions.push({ path: local.path, action: 'skip', local, base, remote: remoteFile });
-      } else if (HB !== null && HL !== HB && HR === HB) {
-        decisions.push({ path: local.path, action: 'upload', local, base, remote: remoteFile });
-      } else if (HB !== null && HR !== HB && HL === HB) {
-        decisions.push({ path: local.path, action: 'download', local, base, remote: remoteFile });
-      } else if (HB !== null && HL !== HB && HR !== HB && HL !== HR) {
-        decisions.push({ path: local.path, action: 'conflict', local, base, remote: remoteFile });
-      } else if (HB !== null && HL === HB && HR !== HB) {
-        decisions.push({ path: local.path, action: 'skip', local, base, remote: remoteFile });
-      }
-    }
-
-    for (const remoteFile of remoteManifest.files) {
-      if (!localManifest.files.find((f) => f.path === remoteFile.path)) {
-        const base = bMap.get(remoteFile.path);
-        decisions.push({
-          path: remoteFile.path,
-          action: 'download',
-          base,
-          remote: remoteFile,
-        });
-      }
-    }
-
-    return decisions;
+    return negotiateManifests(L, R, this.manifestB);
   }
 
   private async ensureParentFolder(path: string): Promise<void> {
@@ -235,6 +199,26 @@ export class DevitriSyncEngine {
     }
 
     return downloaded;
+  }
+
+  private async purgeLocal(toDeleteLocal: string[]): Promise<number> {
+    let deleted = 0;
+
+    for (const path of toDeleteLocal) {
+      try {
+        const file = this.vault.getAbstractFileByPath(path);
+        if (isTFile(file)) {
+          await this.vault.delete(file);
+        }
+        this.removeFromBaseManifest(path);
+        this.dirtyFiles.delete(path);
+        deleted++;
+      } catch (err) {
+        console.error(`Devitri: Failed to delete local ${path}`, err);
+      }
+    }
+
+    return deleted;
   }
 
   private async push(
@@ -389,16 +373,21 @@ export class DevitriSyncEngine {
       const toDelete = decisions
         .filter((d) => d.action === 'delete')
         .map((d) => d.path);
+      const toDeleteLocal = decisions
+        .filter((d) => d.action === 'delete_local')
+        .map((d) => d.path);
+      const allDeletes = [...toDelete, ...toDeleteLocal];
 
-      if (this.checkBulkDelete(toDelete, L.files.length) && !this.bulkDeleteConfirmed) {
-        this.markPendingBulkDelete(toDelete.length);
-        const errorMsg = `Devitri: Bulk delete of ${toDelete.length} files blocked. Confirm once in Devitri settings, then sync again.`;
+      if (this.checkBulkDelete(allDeletes, L.files.length) && !this.bulkDeleteConfirmed) {
+        this.markPendingBulkDelete(allDeletes.length);
+        const errorMsg = `Devitri: Bulk delete of ${allDeletes.length} files blocked. Confirm once in Devitri settings, then sync again.`;
         console.error(errorMsg);
         result.errors.push(errorMsg);
         return result;
       }
 
       result.downloaded = await this.pull(toDownload, R);
+      await this.purgeLocal(toDeleteLocal);
 
       const conflictResult = await this.handleConflicts(conflicts);
       result.conflicts = conflictResult.newConflicts;
