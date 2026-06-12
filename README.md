@@ -9,6 +9,10 @@ Your notes live in Obsidian — on your laptop, your phone, maybe a second compu
 
 Devitri uses **three-way sync** with content hashes, so the plugin can merge non-overlapping edits automatically and create safe conflict copies when it cannot. It works on **desktop and mobile** using Obsidian's built-in HTTP API — no browser CORS workarounds required.
 
+![Devitri Sync](docs/screenshots/devitri-sync-sc1.png)
+
+![Devitri Sync](docs/screenshots/devitri-sync-sc2.png)
+
 ## How it works
 
 1. **Set up a Devitri server** — run your own instance with [Docker or bare metal](https://github.com/rigter/devitri). Create a vault and generate an **Access Key** from the dashboard **Connect** page.
@@ -88,11 +92,11 @@ After changing servers or if notes stop syncing, use **Reset Local Sync State** 
 
 ## What syncs
 
-| Included | Not included |
-| -------- | ------------ |
-| Markdown notes (`.md`) | Anything under `.obsidian/` (plugin data, themes, snippets, …) |
-| Images and attachments (PNG, JPG, GIF, WebP, SVG, PDF, …) | |
-| Other files in your vault | |
+| Included                                                  | Not included                                                   |
+| --------------------------------------------------------- | -------------------------------------------------------------- |
+| Markdown notes (`.md`)                                    | Anything under `.obsidian/` (plugin data, themes, snippets, …) |
+| Images and attachments (PNG, JPG, GIF, WebP, SVG, PDF, …) |                                                                |
+| Other files in your vault                                 |                                                                |
 
 Embedded images and linked attachments sync like any other vault file. On the first sync (or after **Reset Local Sync State**), the plugin scans the whole vault — not just `.md` files — so existing images are included too.
 
@@ -101,7 +105,7 @@ Embedded images and linked attachments sync like any other vault file. On the fi
 | Issue               | What to check                                                                                                                                                                      |
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Connection failed   | Server URL points at the **API**, not the dashboard dev port (`:8080`, not `:3000` / `:5173`); access key from **Connect**, not master password; HTTPS for internet-facing servers |
-| Plugin not listed   | Folder name is exactly `devitri-sync`; `main.js` and `manifest.json` sit side by side; Community plugins enabled                                                        |
+| Plugin not listed   | Folder name is exactly `devitri-sync`; `main.js` and `manifest.json` sit side by side; Community plugins enabled                                                                   |
 | Only new notes sync | **Reset Local Sync State**, then **Sync Now** (common after switching Server URL)                                                                                                  |
 | Sync blocked        | **Confirm once** under Bulk delete, then **Sync Now**                                                                                                                              |
 | Session expired     | Generate a new access key in the dashboard **Connect** page and paste it in settings                                                                                               |
