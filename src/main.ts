@@ -8,7 +8,14 @@ import { DevitriSettingsTab } from './ui/SettingsTab';
 import { DevitriSyncEngine } from './sync/engine';
 import { DevitriApi } from './sync/api';
 import { formatRelativeSync, formatSyncSummary } from './sync/notify';
-import { normalizeSyncManifest, SyncManifest, PluginData, SyncResult } from './types';
+import {
+  isPluginData,
+  normalizeSyncManifest,
+  PluginData,
+  SyncManifest,
+  SyncResult,
+} from './types';
+import { isUnderConfigDir } from './sync/paths';
 
 function slugifyVaultId(name: string): string {
   return name
@@ -31,7 +38,8 @@ class DevitriPlugin extends Plugin {
   async onload() {
     this.injectStyles();
 
-    this.data = (await this.loadData()) ?? this.getInitialData();
+    const loaded = await this.loadData();
+    this.data = isPluginData(loaded) ? loaded : this.getInitialData();
     if (this.data.tokenExpiresAt === undefined) {
       this.data.tokenExpiresAt = 0;
     }
@@ -74,7 +82,7 @@ class DevitriPlugin extends Plugin {
 
   async onExternalSettingsChange() {
     const loaded = await this.loadData();
-    if (loaded) {
+    if (isPluginData(loaded)) {
       this.data = loaded;
     }
     this.api.updateCredentials(
@@ -91,24 +99,24 @@ class DevitriPlugin extends Plugin {
     );
   }
 
-  async onunload() {
+  onunload() {
     if (this.syncIntervalId !== null) {
-      clearInterval(this.syncIntervalId);
+      window.clearInterval(this.syncIntervalId);
       this.syncIntervalId = null;
     }
     if (this.statusBarResetTimer !== null) {
-      clearTimeout(this.statusBarResetTimer);
+      window.clearTimeout(this.statusBarResetTimer);
       this.statusBarResetTimer = null;
     }
     this.statusBarItem = null;
 
     this.data.manifestB = this.engine.getManifestB();
-    await this.saveData(this.data);
+    void this.saveData(this.data);
   }
 
   restartSyncInterval(): void {
     if (this.syncIntervalId !== null) {
-      clearInterval(this.syncIntervalId);
+      window.clearInterval(this.syncIntervalId);
       this.syncIntervalId = null;
     }
     this.startSyncInterval();
@@ -137,11 +145,11 @@ class DevitriPlugin extends Plugin {
   }
 
   private injectStyles(): void {
-    if (document.getElementById('devitri-plugin-styles')) return;
-    const el = document.createElement('style');
+    if (activeDocument.getElementById('devitri-plugin-styles')) return;
+    const el = activeDocument.createElement('style');
     el.id = 'devitri-plugin-styles';
     el.textContent = styles;
-    document.head.appendChild(el);
+    activeDocument.head.appendChild(el);
   }
 
   private onFileCreate(file: { path: string }): void {
@@ -165,7 +173,7 @@ class DevitriPlugin extends Plugin {
   }
 
   private isFileSyncable(file: { path: string }): boolean {
-    return !file.path.startsWith('.obsidian/');
+    return !isUnderConfigDir(file.path, this.app.vault.configDir);
   }
 
   private startSyncInterval(): void {
@@ -191,7 +199,7 @@ class DevitriPlugin extends Plugin {
     const notify = options?.notify ?? true;
     this.isSyncing = true;
     this.setStatusBarSyncing();
-    this.settingsTab.display();
+    this.settingsTab.update();
 
     try {
       const result = await this.engine.run();
@@ -216,7 +224,7 @@ class DevitriPlugin extends Plugin {
       return null;
     } finally {
       this.isSyncing = false;
-      this.settingsTab.display();
+      this.settingsTab.update();
     }
   }
 
@@ -260,7 +268,7 @@ class DevitriPlugin extends Plugin {
 
   private scheduleStatusBarIdleReset(delayMs = 5000): void {
     if (this.statusBarResetTimer !== null) {
-      clearTimeout(this.statusBarResetTimer);
+      window.clearTimeout(this.statusBarResetTimer);
     }
     this.statusBarResetTimer = window.setTimeout(() => {
       this.statusBarResetTimer = null;
@@ -285,9 +293,12 @@ class DevitriPlugin extends Plugin {
   }
 
   private getInitialData(): PluginData {
+    const storedId = this.app.loadLocalStorage('devitri_device_id');
     const deviceId =
-      localStorage.getItem('devitri_device_id') || this.generateDeviceId();
-    localStorage.setItem('devitri_device_id', deviceId);
+      typeof storedId === 'string' && storedId.length > 0
+        ? storedId
+        : this.generateDeviceId();
+    this.app.saveLocalStorage('devitri_device_id', deviceId);
 
     return {
       serverUrl: '',

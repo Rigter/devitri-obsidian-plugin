@@ -2,7 +2,7 @@
   "id": "devitri-sync",
   "name": "Devitri",
   "version": "1.0.0",
-  "minAppVersion": "1.5.7",
+  "minAppVersion": "1.13.0",
   "description": "Sync notes and attachments with a self-hosted Devitri server across desktop and mobile.",
   "author": "Rigter",
   "authorUrl": "https://rigter.me",

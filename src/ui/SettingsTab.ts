@@ -2,7 +2,15 @@
  * Devitri Settings Tab
  */
 
-import {App, ButtonComponent, Notice, PluginSettingTab, Setting} from 'obsidian';
+import {
+  App,
+  ButtonComponent,
+  Notice,
+  PluginSettingTab,
+  Setting,
+  SettingDefinitionItem,
+  SettingGroup,
+} from 'obsidian';
 import type {DevitriPluginHost} from '../types';
 import {DevitriSyncEngine} from '../sync/engine';
 import {DevitriApi} from '../sync/api';
@@ -33,21 +41,38 @@ export class DevitriSettingsTab extends PluginSettingTab {
     this.engine = engine;
   }
 
-  display(): void {
-    const {containerEl} = this;
-    containerEl.empty();
-    containerEl.addClass('devitri-settings');
+  getSettingDefinitions(): SettingDefinitionItem[] {
+    return [
+      {
+        type: 'group',
+        cls: 'devitri-settings',
+        items: [
+          {
+            name: 'Devitri settings',
+            searchable: false,
+            render: (_setting: Setting, group: SettingGroup) => {
+              this.renderSettings(group.listEl);
+            },
+          },
+        ],
+      },
+    ];
+  }
 
-    containerEl.createEl('h2', {text: 'Devitri'});
+  private renderSettings(container: HTMLElement): void {
+    container.empty();
+    container.addClass('devitri-settings');
 
-    this.statusBannerEl = this.createStatusBanner(containerEl);
+    container.createEl('h2', {text: 'Devitri'});
+
+    this.statusBannerEl = this.createStatusBanner(container);
     this.updateStatusBanner();
 
-    this.createConnectionSection(containerEl);
-    this.createSyncControlSection(containerEl);
-    this.createBulkDeleteSection(containerEl);
-    this.createConflictSection(containerEl);
-    this.createDangerZoneSection(containerEl);
+    this.createConnectionSection(container);
+    this.createSyncControlSection(container);
+    this.createBulkDeleteSection(container);
+    this.createConflictSection(container);
+    this.createDangerZoneSection(container);
 
     if (this.plugin.isConnected()) {
       this.setConnectionState('connected', this.getLocalConnectionMessage());
@@ -245,7 +270,7 @@ export class DevitriSettingsTab extends PluginSettingTab {
               this.getLocalConnectionMessage(),
             );
             new Notice(`Devitri: Vault ID set to ${vaultId}`, 2500);
-            this.display();
+            this.update();
           }),
       );
 
@@ -343,7 +368,7 @@ export class DevitriSettingsTab extends PluginSettingTab {
           );
         }
 
-        this.display();
+        this.update();
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         console.error('Devitri: Connection failed', err);
@@ -404,7 +429,7 @@ export class DevitriSettingsTab extends PluginSettingTab {
                   `Devitri: Sync complete — ${result.downloaded} downloaded, ${result.uploaded} uploaded`,
                   4000,
                 );
-                this.display();
+                this.update();
               } catch (err) {
                 const message =
                   err instanceof Error ? err.message : String(err);
@@ -435,13 +460,13 @@ export class DevitriSettingsTab extends PluginSettingTab {
           'Confirm once, then run Sync Now.',
       )
       .addButton(button =>
-        button.setButtonText('Confirm once').setWarning().onClick(() => {
+        button.setButtonText('Confirm once').setDestructive().onClick(() => {
           this.engine.setBulkDeleteConfirmed(true);
           new Notice(
             'Devitri: Bulk delete confirmed for the next sync. Tap Sync Now.',
             6000,
           );
-          this.display();
+          this.update();
         }),
       );
   }
@@ -481,7 +506,7 @@ export class DevitriSettingsTab extends PluginSettingTab {
       .addButton(button =>
         button
           .setButtonText('Reset')
-          .setWarning()
+          .setDestructive()
           .onClick(async () => {
             this.plugin.data.manifestB = {
               vault_id: this.plugin.data.vaultId || '',
@@ -491,7 +516,7 @@ export class DevitriSettingsTab extends PluginSettingTab {
             await this.plugin.saveData(this.plugin.data);
             this.engine.setManifestB(this.plugin.data.manifestB);
             new Notice('Devitri: Sync state reset.', 5000);
-            this.display();
+            this.update();
           }),
       );
 
@@ -502,7 +527,7 @@ export class DevitriSettingsTab extends PluginSettingTab {
         .addButton(button =>
           button
             .setButtonText('Disconnect')
-            .setWarning()
+            .setDestructive()
             .onClick(async () => {
               this.plugin.data.token = '';
               this.plugin.data.tokenExpiresAt = 0;
@@ -522,7 +547,7 @@ export class DevitriSettingsTab extends PluginSettingTab {
                 this.getLocalConnectionMessage(),
               );
               new Notice('Devitri: Disconnected.', 3000);
-              this.display();
+              this.update();
             }),
         );
     }

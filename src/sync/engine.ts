@@ -2,7 +2,7 @@
  * Sync Engine – 3-Way Sync State Machine
  */
 
-import { App, normalizePath, TFile, Vault } from 'obsidian';
+import { App, FileManager, normalizePath, TFile, Vault } from 'obsidian';
 import { BulkDeleteBlockedError, DevitriApi } from './api';
 import {
   FileState,
@@ -21,6 +21,7 @@ function isTFile(file: unknown): file is TFile {
 
 export class DevitriSyncEngine {
   private vault: Vault;
+  private fileManager: FileManager;
   private api: DevitriApi;
   private manifestB: SyncManifest;
   private conflictCount = 0;
@@ -34,6 +35,7 @@ export class DevitriSyncEngine {
 
   constructor(app: App, api: DevitriApi, manifestB: SyncManifest) {
     this.vault = app.vault;
+    this.fileManager = app.fileManager;
     this.api = api;
     this.manifestB = normalizeSyncManifest(manifestB, api.vaultId);
   }
@@ -208,7 +210,7 @@ export class DevitriSyncEngine {
       try {
         const file = this.vault.getAbstractFileByPath(path);
         if (isTFile(file)) {
-          await this.vault.delete(file);
+          await this.fileManager.trashFile(file);
         }
         this.removeFromBaseManifest(path);
         this.dirtyFiles.delete(path);

@@ -2,6 +2,8 @@
  * Devitri Obsidian Plugin - TypeScript Types
  */
 
+import type { DevitriApi } from '../sync/api';
+
 export interface FileState {
   path: string;
   hash: string;
@@ -109,14 +111,24 @@ export interface SettingsResponse {
  * Minimal surface the Settings UI expects from the plugin instance.
  * Keep this interface stable even if the plugin class name changes.
  */
+export function isPluginData(value: unknown): value is PluginData {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'serverUrl' in value &&
+    'vaultId' in value &&
+    'token' in value
+  );
+}
+
 export type DevitriPluginHost = import('obsidian').Plugin & {
   data: PluginData;
   isSyncing: boolean;
   saveData(data?: unknown): Promise<void>;
   restartSyncInterval(): void;
   isConnected(): boolean;
-  getApi(): any;
-  replaceApi(api: unknown): void;
-  startSyncCycle(options?: { notify?: boolean }): Promise<import('./index').SyncResult | null>;
+  getApi(): DevitriApi;
+  replaceApi(api: DevitriApi): void;
+  startSyncCycle(options?: { notify?: boolean }): Promise<SyncResult | null>;
   updateStatusBarIdle(): void;
 };

@@ -61,7 +61,7 @@ export class DevitriApi {
     this._deviceId = deviceId;
   }
 
-  private normalizeResponse(response: RequestUrlResponse) {
+  private normalizeResponse(response: RequestUrlResponse): unknown {
     if (response.status >= 200 && response.status < 300) {
       if (response.json !== undefined) {
         return response.json;

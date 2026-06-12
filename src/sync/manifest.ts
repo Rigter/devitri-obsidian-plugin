@@ -5,6 +5,7 @@
 
 import { Vault } from 'obsidian';
 import { FileState, SyncManifest } from '../types';
+import { isUnderConfigDir } from './paths';
 
 export async function computeHash(buffer: ArrayBuffer): Promise<string> {
   const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
@@ -15,10 +16,10 @@ export async function computeHash(buffer: ArrayBuffer): Promise<string> {
 export async function buildLocalManifest(vault: Vault): Promise<SyncManifest> {
   const files: FileState[] = [];
   const vaultFiles = vault.getFiles();
+  const configDir = vault.configDir;
 
   for (const file of vaultFiles) {
-    // Skip .obsidian/ directory
-    if (file.path.startsWith('.obsidian/')) {
+    if (isUnderConfigDir(file.path, configDir)) {
       continue;
     }
 
