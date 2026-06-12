@@ -26,7 +26,7 @@ devitri-obsidian-plugin/
 │   │   ├── conflicts.ts    # Markdown merge and conflict copies
 │   │   └── notify.ts       # Status bar and notice formatting
 │   └── ui/SettingsTab.ts
-├── manifest.json           # id must match install folder name
+├── manifest.json           # id must match install folder name (devitri-sync)
 ├── esbuild.config.mjs
 ├── tsconfig.json
 ├── package.json

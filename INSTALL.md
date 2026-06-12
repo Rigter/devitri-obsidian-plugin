@@ -18,14 +18,14 @@ Output: `dist/main.js` and `dist/manifest.json`.
 
 ## Install in a vault
 
-Plugins live at `{vault}/.obsidian/plugins/devitri-obsidian-plugin/`. The folder name **must** match `manifest.json` → `id`.
+Plugins live at `{vault}/.obsidian/plugins/devitri-sync/`. The folder name **must** match `manifest.json` → `id`.
 
 ```bash
 VAULT="$HOME/Documents/MyVault"   # your vault path
 
-mkdir -p "$VAULT/.obsidian/plugins/devitri-obsidian-plugin"
+mkdir -p "$VAULT/.obsidian/plugins/devitri-sync"
 cp dist/main.js dist/manifest.json \
-  "$VAULT/.obsidian/plugins/devitri-obsidian-plugin/"
+  "$VAULT/.obsidian/plugins/devitri-sync/"
 ```
 
 Restart Obsidian → **Settings** → **Community plugins** → enable **Devitri**.
@@ -54,7 +54,7 @@ Then **Connect & Sync** or **Verify**, and optionally **Sync Now**.
 
 | Issue | What to check |
 |-------|----------------|
-| Plugin not listed | Folder name = `devitri-obsidian-plugin`; both `main.js` and `manifest.json` present |
+| Plugin not listed | Folder name = `devitri-sync`; both `main.js` and `manifest.json` present |
 | Connection fails | API up, URL without trailing slash, HTTPS in production |
 | `localhost:3000` fails | Use API on `:8080`, not the dashboard dev server |
 | Sync blocked (bulk delete) | **Confirm once** in settings, then **Sync Now** |

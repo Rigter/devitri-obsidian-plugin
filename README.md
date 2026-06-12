@@ -54,12 +54,12 @@ npm install
 npm run build
 ```
 
-Copy the files into your vault. The folder name **must** match the plugin id in `manifest.json` (`devitri-obsidian-plugin`):
+Copy the files into your vault. The folder name **must** match the plugin id in `manifest.json` (`devitri-sync`):
 
 ```bash
 VAULT="/path/to/your/vault"
-mkdir -p "$VAULT/.obsidian/plugins/devitri-obsidian-plugin"
-cp dist/main.js dist/manifest.json "$VAULT/.obsidian/plugins/devitri-obsidian-plugin/"
+mkdir -p "$VAULT/.obsidian/plugins/devitri-sync"
+cp dist/main.js dist/manifest.json "$VAULT/.obsidian/plugins/devitri-sync/"
 ```
 
 Restart Obsidian, then go to **Settings → Community plugins** and enable **Devitri**.
@@ -101,7 +101,7 @@ Embedded images and linked attachments sync like any other vault file. On the fi
 | Issue               | What to check                                                                                                                                                                      |
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Connection failed   | Server URL points at the **API**, not the dashboard dev port (`:8080`, not `:3000` / `:5173`); access key from **Connect**, not master password; HTTPS for internet-facing servers |
-| Plugin not listed   | Folder name is exactly `devitri-obsidian-plugin`; `main.js` and `manifest.json` sit side by side; Community plugins enabled                                                        |
+| Plugin not listed   | Folder name is exactly `devitri-sync`; `main.js` and `manifest.json` sit side by side; Community plugins enabled                                                        |
 | Only new notes sync | **Reset Local Sync State**, then **Sync Now** (common after switching Server URL)                                                                                                  |
 | Sync blocked        | **Confirm once** under Bulk delete, then **Sync Now**                                                                                                                              |
 | Session expired     | Generate a new access key in the dashboard **Connect** page and paste it in settings                                                                                               |
