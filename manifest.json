@@ -1,10 +1,11 @@
 {
-  "id": "devitri-obsidian-plugin",
+  "id": "devitri-sync",
   "name": "Devitri",
   "version": "1.0.0",
-  "minAppVersion": "1.0.0",
+  "minAppVersion": "1.5.7",
+  "description": "Sync notes and attachments with a self-hosted Devitri server across desktop and mobile.",
   "author": "Rigter",
   "authorUrl": "https://rigter.me",
-  "description": "Bidirectional sync with Devitri server for Obsidian",
+  "isDesktopOnly": false,
   "main": "main.js"
 }
